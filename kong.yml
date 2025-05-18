@@ -1,0 +1,17 @@
+_format_version: "3.0"
+services:
+  - name: cashflow-transaction-service
+    url: http://cashflow-transaction:80/api/Transaction
+    routes:
+      - name: cashflow-transaction-route
+        paths:
+          - /api/v1/transaction
+        strip_path: true
+        
+  - name: cashflow-dailybalance-service
+    url: http://cashflow-dailybalance:80/api/DailyBalance
+    routes:
+      - name: cashflow-dailybalance-route
+        paths:
+          - /api/v1/daily-balance
+        strip_path: true
