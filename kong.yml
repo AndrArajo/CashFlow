@@ -15,3 +15,11 @@ services:
         paths:
           - /api/v1/daily-balance
         strip_path: true
+
+  - name: swagger-ui-service
+    url: http://swagger-ui:8080
+    routes:
+      - name: swagger-ui-route
+        paths:
+          - /api/docs
+        strip_path: true

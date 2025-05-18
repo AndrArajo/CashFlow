@@ -1,0 +1,288 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "CashFlow API",
+    "description": "API para gerenciamento de fluxo de caixa, transações e balanços diários",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8000/api/v1",
+      "description": "API Gateway Kong"
+    }
+  ],
+  "paths": {
+    "/transaction": {
+      "get": {
+        "summary": "Obter Todas as Transações",
+        "description": "Retorna a lista de todas as transações financeiras registradas no sistema.",
+        "responses": {
+          "200": {
+            "description": "Lista de transações retornada com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Transaction"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Registrar Transação",
+        "description": "Registra uma nova transação financeira no sistema.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransactionInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Transação criada com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Transaction"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/transaction/{id}": {
+      "get": {
+        "summary": "Obter Transação por ID",
+        "description": "Retorna uma transação específica pelo seu ID.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID da transação"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Transação encontrada com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Transaction"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Transação não encontrada"
+          }
+        }
+      }
+    },
+    "/daily-balance/{date}": {
+      "get": {
+        "summary": "Obter Balanço por Data",
+        "description": "Obtém o balanço diário para uma data específica.",
+        "parameters": [
+          {
+            "name": "date",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Data no formato YYYY-MM-DD"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Balanço encontrado com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DailyBalance"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Balanço não encontrado para a data especificada"
+          }
+        }
+      }
+    },
+    "/daily-balance/period": {
+      "get": {
+        "summary": "Obter Balanços por Período",
+        "description": "Obtém os balanços diários para um período específico.",
+        "parameters": [
+          {
+            "name": "startDate",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Data inicial no formato YYYY-MM-DD"
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Data final no formato YYYY-MM-DD"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Balanços encontrados com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DailyBalance"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Parâmetros de data inválidos"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "TransactionInput": {
+        "type": "object",
+        "required": ["amount", "type"],
+        "properties": {
+          "description": {
+            "type": "string",
+            "description": "Descrição da transação"
+          },
+          "amount": {
+            "type": "number",
+            "format": "double",
+            "description": "Valor da transação (deve ser maior que zero)"
+          },
+          "type": {
+            "type": "integer",
+            "enum": [0, 1],
+            "description": "Tipo da transação conforme enum TransactionType: (0 = Credit/Crédito, 1 = Debit/Débito)"
+          },
+          "origin": {
+            "type": "string",
+            "description": "Origem da transação"
+          },
+          "transactionDate": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Data da transação (opcional, padrão é a data atual)"
+          }
+        }
+      },
+      "Transaction": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "ID único da transação"
+          },
+          "description": {
+            "type": "string",
+            "description": "Descrição da transação"
+          },
+          "amount": {
+            "type": "number",
+            "format": "double",
+            "description": "Valor da transação"
+          },
+          "type": {
+            "type": "integer",
+            "enum": [0, 1],
+            "description": "Tipo da transação conforme enum TransactionType: (0 = Credit/Crédito, 1 = Debit/Débito)"
+          },
+          "origin": {
+            "type": "string",
+            "description": "Origem da transação"
+          },
+          "transactionDate": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Data da transação"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Data de criação do registro"
+          }
+        }
+      },
+      "DailyBalance": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "ID único do balanço"
+          },
+          "balanceDate": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Data do balanço"
+          },
+          "finalBalance": {
+            "type": "number",
+            "format": "double",
+            "description": "Saldo final"
+          },
+          "previousBalance": {
+            "type": "number",
+            "format": "double",
+            "description": "Saldo anterior"
+          },
+          "totalCredits": {
+            "type": "number",
+            "format": "double",
+            "description": "Total de créditos"
+          },
+          "totalDebits": {
+            "type": "number",
+            "format": "double",
+            "description": "Total de débitos"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Data de criação do registro"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Data de atualização do registro"
+          }
+        }
+      }
+    }
+  }
+} 
