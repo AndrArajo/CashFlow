@@ -96,10 +96,10 @@ O CashFlow tem como objetivo principal registrar e processar transações financ
 ## Diagramas do Sistema
 
 ### Diagrama de Contexto C4
-![Diagrama de Contexto C4](diagrams/C4context.png)
+![Diagrama de Contexto C4](https://imgur.com/WXmALRR.png)
 
 ### Diagrama de Container C4
-![Diagrama de Container C4](diagrams/C4container.png)
+![Diagrama de Container C4](https://imgur.com/QlaY80K.png)
 
 ## Executando com Docker
 
