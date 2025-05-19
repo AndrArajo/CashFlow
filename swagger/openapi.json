@@ -14,8 +14,8 @@
   "paths": {
     "/transaction": {
       "get": {
-        "summary": "Obter Todas as Transações",
-        "description": "Retorna a lista de todas as transações financeiras registradas no sistema.",
+        "summary": "Obter Todas Transações",
+        "description": "Obtém todas as transações",
         "responses": {
           "200": {
             "description": "Lista de transações retornada com sucesso",
@@ -34,7 +34,7 @@
       },
       "post": {
         "summary": "Registrar Transação",
-        "description": "Registra uma nova transação financeira no sistema.",
+        "description": "Registra uma nova transação financeira e a envia para o Kafka",
         "requestBody": {
           "required": true,
           "content": {
@@ -59,10 +59,54 @@
         }
       }
     },
+    "/transaction/paginated": {
+      "get": {
+        "summary": "Obter Transações Paginadas",
+        "description": "Obtém transações com paginação simples",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "description": "Número da página"
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10
+            },
+            "description": "Tamanho da página (máximo 10)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista paginada de transações retornada com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Transaction"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/transaction/{id}": {
       "get": {
         "summary": "Obter Transação por ID",
-        "description": "Retorna uma transação específica pelo seu ID.",
+        "description": "Obtém uma transação pelo ID",
         "parameters": [
           {
             "name": "id",
@@ -94,7 +138,7 @@
     "/daily-balance/{date}": {
       "get": {
         "summary": "Obter Balanço por Data",
-        "description": "Obtém o balanço diário para uma data específica.",
+        "description": "Retorna o balanço diário para uma data específica.",
         "parameters": [
           {
             "name": "date",
@@ -127,7 +171,7 @@
     "/daily-balance/period": {
       "get": {
         "summary": "Obter Balanços por Período",
-        "description": "Obtém os balanços diários para um período específico.",
+        "description": "Retorna os balanços diários para um período específico.",
         "parameters": [
           {
             "name": "startDate",
@@ -166,6 +210,161 @@
           },
           "400": {
             "description": "Parâmetros de data inválidos"
+          }
+        }
+      }
+    },
+    "/daily-balance/paginated": {
+      "get": {
+        "summary": "Obter Balanços Paginados",
+        "description": "Retorna uma lista paginada de balanços diários.",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "description": "Número da página para consulta paginada"
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "description": "Tamanho da página para consulta paginada"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista paginada de balanços retornada com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DailyBalance"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/daily-balance/process/{date}": {
+      "post": {
+        "summary": "Processar Balanço por Data",
+        "description": "Processa o balanço diário para uma data específica.",
+        "parameters": [
+          {
+            "name": "date",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Data no formato YYYY-MM-DD"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Balanço processado com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DailyBalance"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Não foram encontradas transações para a data especificada"
+          }
+        }
+      }
+    },
+    "/daily-balance/process-range": {
+      "post": {
+        "summary": "Processar Balanços por Período",
+        "description": "Processa os balanços diários para um período específico.",
+        "parameters": [
+          {
+            "name": "startDate",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Data inicial no formato YYYY-MM-DD"
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Data final no formato YYYY-MM-DD"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Balanços processados com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DailyBalance"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Parâmetros de data inválidos"
+          }
+        }
+      }
+    },
+    "/daily-balance/summary/{date}": {
+      "get": {
+        "summary": "Obter Resumo do Balanço por Data",
+        "description": "Retorna um resumo do balanço diário para uma data específica.",
+        "parameters": [
+          {
+            "name": "date",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Data no formato YYYY-MM-DD"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resumo do balanço encontrado com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DailyBalance"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Balanço não encontrado para a data especificada"
           }
         }
       }
