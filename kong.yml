@@ -1,4 +1,13 @@
 _format_version: "3.0"
+
+consumers:
+  - username: cashflow-user
+
+# Configuração de acesso público
+acls:
+  - consumer: cashflow-user
+    group: api-access
+
 services:
   - name: cashflow-transaction-service
     url: http://cashflow-transaction:80/api/Transaction
@@ -22,4 +31,47 @@ services:
       - name: swagger-ui-route
         paths:
           - /api/docs
+        strip_path: true
+
+  - name: keycloak-service
+    url: http://keycloak:8080
+    routes:
+      - name: keycloak-route
+        paths:
+          - /auth
+        strip_path: false
+
+  - name: keycloak-admin-service
+    url: http://keycloak:8080/admin
+    routes:
+      - name: keycloak-admin-route
+        paths:
+          - /admin/keycloak
+        strip_path: true
+        
+  # Rota específica para o endpoint de token
+  - name: keycloak-token-endpoint
+    url: http://keycloak:8080/realms/cashflow/protocol/openid-connect/token
+    routes:
+      - name: token-route
+        paths:
+          - /api/v1/token
+        strip_path: true
+        
+  # Rota para descoberta do OpenID Connect
+  - name: keycloak-openid-config
+    url: http://keycloak:8080/realms/cashflow/.well-known/openid-configuration
+    routes:
+      - name: openid-config-route
+        paths:
+          - /api/v1/auth/.well-known/openid-configuration
+        strip_path: true
+        
+  # Rota para obter as chaves públicas do Keycloak (necessário para validação JWT)
+  - name: keycloak-jwks
+    url: http://keycloak:8080/realms/cashflow/protocol/openid-connect/certs
+    routes:
+      - name: jwks-route
+        paths:
+          - /api/v1/auth/certs
         strip_path: true

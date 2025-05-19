@@ -1,0 +1,114 @@
+{
+  "realm": "cashflow",
+  "enabled": true,
+  "displayName": "CashFlow",
+  "displayNameHtml": "<div class=\"kc-logo-text\"><span>CashFlow</span></div>",
+  "sslRequired": "external",
+  "accessTokenLifespan": 300,
+  "accessTokenLifespanForImplicitFlow": 900,
+  "ssoSessionIdleTimeout": 1800,
+  "ssoSessionMaxLifespan": 36000,
+  "offlineSessionIdleTimeout": 2592000,
+  "defaultSignatureAlgorithm": "RS256",
+  "roles": {
+    "realm": [
+      {
+        "name": "user",
+        "description": "Usuário comum com permissões limitadas"
+      },
+      {
+        "name": "admin",
+        "description": "Administrador com todas as permissões"
+      }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "kong",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "directAccessGrantsEnabled": true,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "serviceAccountsEnabled": true,
+      "authorizationServicesEnabled": true,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "kong-client-secret",
+      "redirectUris": [
+        "http://localhost:8000/*",
+        "http://localhost:8000/api/v1/*"
+      ],
+      "webOrigins": [
+        "+"
+      ],
+      "defaultClientScopes": [
+        "profile",
+        "email",
+        "roles"
+      ],
+      "attributes": {
+        "access.token.lifespan": "3600",
+        "oauth2.device.authorization.grant.enabled": "true",
+        "backchannel.logout.revoke.offline.tokens": "false",
+        "use.refresh.tokens": "true",
+        "oidc.ciba.grant.enabled": "false",
+        "backchannel.logout.session.required": "true",
+        "client_credentials.use_refresh_token": "false",
+        "acr.loa.map": "{}",
+        "require.pushed.authorization.requests": "false",
+        "tls.client.certificate.bound.access.tokens": "false",
+        "display.on.consent.screen": "false",
+        "token.response.type.bearer.lower-case": "false"
+      }
+    }
+  ],
+  "tokenSettings": {
+    "accessTokenLifespan": 300,
+    "accessTokenLifespanForImplicitFlow": 900,
+    "actionTokenGeneratedByAdminLifespan": 43200,
+    "actionTokenGeneratedByUserLifespan": 300
+  },
+  "tokenManager": {
+    "accessTokenLifespan": 300
+  },
+  "users": [
+    {
+      "username": "cashflow-user",
+      "email": "user@cashflow.com",
+      "emailVerified": true,
+      "enabled": true,
+      "firstName": "CashFlow",
+      "lastName": "User",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "password",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "user"
+      ]
+    },
+    {
+      "username": "admin",
+      "email": "admin@cashflow.com",
+      "emailVerified": true,
+      "enabled": true,
+      "firstName": "Admin",
+      "lastName": "CashFlow",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "admin",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "admin",
+        "user"
+      ]
+    }
+  ]
+} 

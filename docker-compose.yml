@@ -201,6 +201,48 @@ services:
     networks:
       - cashflow-network
 
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    container_name: cashflow-keycloak
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    command:
+      - start-dev
+      - --health-enabled=true
+    ports:
+      - "8890:8080"
+    networks:
+      - cashflow-network
+    restart: on-failure
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health/ready || exit 0"]
+      interval: 15s
+      timeout: 10s
+      retries: 20
+      start_period: 30s
+
+  keycloak-config-cli:
+    image: adorsys/keycloak-config-cli:latest
+    container_name: keycloak-config-cli
+    volumes:
+      - ./keycloak:/config
+    environment:
+      KEYCLOAK_USER: admin
+      KEYCLOAK_PASSWORD: admin
+      KEYCLOAK_URL: http://keycloak:8080
+      KEYCLOAK_AVAILABILITYCHECK_ENABLED: "true"
+      KEYCLOAK_AVAILABILITYCHECK_TIMEOUT: "120s"
+      IMPORT_PATH: /config
+      IMPORT_FORCE: "true"
+      IMPORT_VARSUBSTITUTION: "true"
+      SPRING_PROFILES_ACTIVE: "debug"
+    depends_on:
+      keycloak:
+        condition: service_started
+    networks:
+      - cashflow-network
+    restart: on-failure
 
 networks:
   cashflow-network:
