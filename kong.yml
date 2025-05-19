@@ -1,5 +1,30 @@
 _format_version: "3.0"
 
+plugins:
+  - name: cors
+    config:
+      origins:
+        - "*"
+      methods:
+        - GET
+        - POST
+        - PUT
+        - DELETE
+        - PATCH
+        - OPTIONS
+      headers:
+        - Accept
+        - Accept-Version
+        - Content-Length
+        - Content-MD5
+        - Content-Type
+        - Date
+        - X-Auth-Token
+        - Authorization
+      credentials: true
+      max_age: 3600
+      preflight_continue: false
+
 consumers:
   - username: cashflow-user
 
@@ -57,6 +82,27 @@ services:
         paths:
           - /api/v1/token
         strip_path: true
+        plugins:
+          - name: cors
+            config:
+              origins:
+                - "*"
+              methods:
+                - POST
+                - GET
+                - OPTIONS
+              headers:
+                - Accept
+                - Accept-Version
+                - Content-Length
+                - Content-MD5
+                - Content-Type
+                - Date
+                - X-Auth-Token
+                - Authorization
+              credentials: true
+              max_age: 3600
+              preflight_continue: false
         
   # Rota para descoberta do OpenID Connect
   - name: keycloak-openid-config
@@ -66,6 +112,22 @@ services:
         paths:
           - /api/v1/auth/.well-known/openid-configuration
         strip_path: true
+        plugins:
+          - name: cors
+            config:
+              origins:
+                - "*"
+              methods:
+                - GET
+                - OPTIONS
+              headers:
+                - Accept
+                - Accept-Version
+                - Content-Type
+                - Authorization
+              credentials: true
+              max_age: 3600
+              preflight_continue: false
         
   # Rota para obter as chaves públicas do Keycloak (necessário para validação JWT)
   - name: keycloak-jwks
@@ -75,3 +137,19 @@ services:
         paths:
           - /api/v1/auth/certs
         strip_path: true
+        plugins:
+          - name: cors
+            config:
+              origins:
+                - "*"
+              methods:
+                - GET
+                - OPTIONS
+              headers:
+                - Accept
+                - Accept-Version
+                - Content-Type
+                - Authorization
+              credentials: true
+              max_age: 3600
+              preflight_continue: false

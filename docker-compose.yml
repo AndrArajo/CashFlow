@@ -244,6 +244,17 @@ services:
       - cashflow-network
     restart: on-failure
 
+  frontend:
+    image: andrarajo/cashflow-frontend:latest
+    container_name: cashflow-frontend
+    environment:
+      - REACT_APP_API_URL=http://localhost:8000/api/v1
+      - REACT_APP_USE_MOCKS=false
+    ports:
+      - "8081:80"
+    networks:
+      - cashflow-network
+
 networks:
   cashflow-network:
     driver: bridge
