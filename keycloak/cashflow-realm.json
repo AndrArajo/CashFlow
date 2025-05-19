@@ -63,15 +63,6 @@
       }
     }
   ],
-  "tokenSettings": {
-    "accessTokenLifespan": 300,
-    "accessTokenLifespanForImplicitFlow": 900,
-    "actionTokenGeneratedByAdminLifespan": 43200,
-    "actionTokenGeneratedByUserLifespan": 300
-  },
-  "tokenManager": {
-    "accessTokenLifespan": 300
-  },
   "users": [
     {
       "username": "cashflow-user",
