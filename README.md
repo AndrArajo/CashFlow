@@ -2,6 +2,8 @@
 
 Sistema baseado em arquitetura orientada a eventos para gerenciamento de transações financeiras, desenvolvido com comunicação assíncrona, autenticação centralizada e processamento baseado em eventos.
 
+> **Nota importante:** O sistema completo pode levar cerca de **5 minutos** para inicializar totalmente após a execução do docker-compose. Aguarde este tempo antes de começar a utilizar as funcionalidades.
+
 ## Requisito Inicial
 
 Um comerciante precisa controlar o seu fluxo de caixa diário com os lançamentos (débitos e créditos), também precisa de um relatório que disponibilize o saldo diário consolidado.
@@ -109,12 +111,13 @@ O CashFlow tem como objetivo principal registrar e processar transações financ
 1. Clone o repositório
 2. Copie o arquivo env.example para .env e ajuste as variáveis de ambiente conforme necessário:
    ```bash
-   cp env.example .env
+   cp .env.example .env
    ```
 3. Execute o sistema completo com Docker Compose:
    ```bash
    docker-compose up -d
    ```
+4. **Importante:** Aguarde cerca de 5 minutos para a inicialização completa de todos os serviços
 
 ### Variáveis de Ambiente
 
@@ -141,10 +144,9 @@ O arquivo `.env` permite configurar vários aspectos do sistema. As principais c
   - `KEYCLOAK_ADMIN_PASSWORD`: Senha do admin (padrão: admin)
 
 ### Acessando os Serviços
-
-- **API Gateway**: http://localhost:8000
-- **Frontend**: http://localhost:8081
 - **Swagger UI**: http://localhost:8000/api/docs
+- **Frontend**: http://localhost:8081
+- **API Gateway**: http://localhost:8000
 - **Keycloak**: http://localhost:8890
   - Realm: cashflow
   - Usuário padrão: cashflow-user / password
@@ -172,6 +174,94 @@ O CashFlow é composto pelos seguintes serviços:
 5. DailyBalance Service consome as transações do Kafka e calcula os saldos diários
 6. Frontend exibe os resultados das operações de forma amigável ao usuário
 7. Todas as operações são protegidas por autenticação JWT
+
+## Guia de Uso
+
+### Utilização via Frontend
+
+1. Acesse o frontend através do endereço: http://localhost:8081
+2. Faça login utilizando as seguintes credenciais:
+   - Usuário: `cashflow-user`
+   - Senha: `password`
+3. Após o login, você terá acesso ao dashboard principal
+4. Para registrar uma nova transação:
+   - Clique em "Nova Transação"
+   - Preencha os dados solicitados (valor, tipo, descrição)
+   - Confirme a transação
+
+### Utilização via API
+
+#### 1. Autenticação
+
+Primeiro, obtenha um token de acesso:
+
+```bash
+curl -X POST "http://localhost:8000/api/v1/token" \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "grant_type=password&client_id=kong&client_secret=kong-client-secret&username=cashflow-user&password=password"
+```
+
+Resposta (exemplo):
+```json
+{
+  "access_token": "eyJhbGciOiJSUzI1NiIsInR5...",
+  "expires_in": 3600,
+  "refresh_token": "eyJhbGciOiJIUzUxMiIsInR5...",
+  "token_type": "Bearer"
+}
+```
+
+#### 2. Registrar Transação
+
+Use o token obtido para registrar uma nova transação:
+
+```bash
+curl -X POST "http://localhost:8000/api/v1/transaction" \
+  -H "Authorization: Bearer SEU_TOKEN_AQUI" \
+  -H "Content-Type: application/json" \
+  -d '{"amount": 100, "type": 0, "description": "Venda à vista"}'
+```
+
+#### 3. Consultar Transações
+
+Consulte as transações registradas:
+
+```bash
+curl -X GET "http://localhost:8000/api/v1/transaction" \
+  -H "Authorization: Bearer SEU_TOKEN_AQUI"
+```
+
+#### 4. Forçar Consolidação de Saldo
+
+O sistema consolida automaticamente os saldos a cada 1 hora, mas você pode forçar a consolidação:
+
+```bash
+curl -X POST "http://localhost:8000/api/v1/daily-balance/period" \
+  -H "Authorization: Bearer SEU_TOKEN_AQUI" \
+  -H "Content-Type: application/json" \
+  -d '{"startDate": "2025-05-01", "endDate": "2025-05-19"}'
+```
+
+#### 5. Consultar Saldos por Período
+
+Obtenha os saldos consolidados por período:
+
+```bash
+curl -X GET "http://localhost:8000/api/v1/daily-balance/period?startDate=2025-05-01&endDate=2025-05-19" \
+  -H "Authorization: Bearer SEU_TOKEN_AQUI"
+```
+
+### Documentação das APIs
+
+A documentação completa das APIs, incluindo todos os endpoints, parâmetros, payloads e respostas, está disponível no Swagger UI:
+
+- **URL do Swagger**: http://localhost:8000/api/docs
+
+Utilize esta interface para:
+- Explorar todos os endpoints disponíveis
+- Visualizar os modelos de dados esperados em cada operação
+- Testar as APIs diretamente pelo navegador
+- Entender os códigos de status e possíveis respostas
 
 ## Repositórios
 
@@ -298,6 +388,11 @@ docker-compose down -v
 
 ## Solução de Problemas
 
+### Tempo de Inicialização
+- O sistema completo leva aproximadamente 5 minutos para inicializar totalmente
+- O Keycloak é geralmente o serviço mais demorado, aguarde sua inicialização completa
+- Monitore os logs para acompanhar o progresso: `docker-compose logs -f`
+
 ### Keycloak não inicia corretamente
 Se o Keycloak apresentar erro de inicialização ou não for possível conectar, tente:
 
@@ -311,11 +406,7 @@ Se o Keycloak apresentar erro de inicialização ou não for possível conectar,
    docker-compose logs keycloak
    ```
 
-3. Aguardar mais tempo para inicialização completa e tentar novamente:
-   ```powershell
-   Start-Sleep -Seconds 60
-   .\scripts\setup-keycloak.ps1
-   ```
+3. Aguardar mais tempo para inicialização completa e tentar novamente
 
 ### Alterações na configuração do Kong
 Se você fizer alterações no arquivo kong.yml, é necessário reiniciar o serviço Kong para aplicá-las:
@@ -333,10 +424,29 @@ docker-compose logs kong
 ### Problemas de Autenticação
 Se estiver tendo problemas com a autenticação JWT:
 
-1. Verifique se o token não expirou (validade padrão: 24 horas)
+1. Verifique se o token não expirou (validade padrão: 1 hora)
 2. Tente obter um novo token de acesso
 3. Verifique os logs do Kong para mensagens de erro
 4. Certifique-se de que o token está sendo enviado corretamente no formato:
    ```
    Authorization: Bearer <token>
+   ``` 
+
+### Erro de Conectividade entre Serviços
+Se aparecer o erro "No route to host", pode ser problema de conectividade entre containers:
+
+1. Reinicie os serviços específicos:
+   ```bash
+   docker-compose restart cashflow-dailybalance kong
+   ```
+
+2. Verifique a rede Docker:
+   ```bash
+   docker network inspect cashflow_cashflow-network
+   ```
+
+3. Se necessário, recrie a rede:
+   ```bash
+   docker-compose down
+   docker-compose up -d
    ``` 
