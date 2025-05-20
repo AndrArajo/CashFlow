@@ -2,7 +2,7 @@
   "openapi": "3.0.0",
   "info": {
     "title": "CashFlow API",
-    "description": "API para gerenciamento de fluxo de caixa, transações e balanços diários.\n\n## Autenticação\n\nAs APIs são protegidas por autenticação JWT (JSON Web Token). Para obter um token, faça uma requisição POST para `/api/v1/login` com as credenciais apropriadas. Todas as demais chamadas devem incluir o cabeçalho `Authorization` com o token.\n\nExemplo:\n```\nAuthorization: Bearer eyJhbGciOiJSUzI1NiIsIn...\n```\n\nOs tokens têm validade de 24 horas (86400 segundos).",
+    "description": "API para gerenciamento de fluxo de caixa, transações e balanços diários.\n\n## Autenticação\n\nAs APIs são protegidas por autenticação JWT (JSON Web Token). Para obter um token, faça uma requisição POST para `/api/v1/token` com as credenciais apropriadas. Todas as demais chamadas devem incluir o cabeçalho `Authorization` com o token.\n\nExemplo:\n```\nAuthorization: Bearer eyJhbGciOiJSUzI1NiIsIn...\n```\n\nOs tokens têm validade de 24 horas (86400 segundos).",
     "version": "1.0.0"
   },
   "servers": [
@@ -17,7 +17,7 @@
     }
   ],
   "paths": {
-    "/login": {
+    "/token": {
       "post": {
         "summary": "Obter Token JWT",
         "description": "Autentica o usuário e retorna um token JWT para acesso às APIs",
@@ -37,7 +37,7 @@
                   },
                   "client_id": {
                     "type": "string",
-                    "description": "ID do cliente (use 'kong-gateway')"
+                    "description": "ID do cliente (use 'kong')"
                   },
                   "client_secret": {
                     "type": "string",
@@ -45,12 +45,12 @@
                   },
                   "username": {
                     "type": "string",
-                    "description": "Nome do usuário (padrão: usuario_padrao)"
+                    "description": "Nome do usuário (padrão: cashflow-user)"
                   },
                   "password": {
                     "type": "string",
                     "format": "password",
-                    "description": "Senha do usuário (padrão: senha123)"
+                    "description": "Senha do usuário (padrão: password)"
                   }
                 }
               }
@@ -95,32 +95,8 @@
         "security": []
       }
     },
-    "/auth/.well-known/openid-configuration": {
-      "get": {
-        "summary": "Obter Configuração OpenID Connect",
-        "description": "Retorna a configuração OpenID Connect do provedor",
-        "tags": ["Autenticação"],
-        "responses": {
-          "200": {
-            "description": "Configuração obtida com sucesso"
-          }
-        },
-        "security": []
-      }
-    },
-    "/auth/certs": {
-      "get": {
-        "summary": "Obter Chaves Públicas JWT",
-        "description": "Retorna as chaves públicas para validação de tokens JWT",
-        "tags": ["Autenticação"],
-        "responses": {
-          "200": {
-            "description": "Chaves obtidas com sucesso"
-          }
-        },
-        "security": []
-      }
-    },
+  
+
     "/transaction": {
       "get": {
         "summary": "Obter Todas Transações",
